@@ -50,7 +50,7 @@
       input.value = "";
 
       try {
-        const res = await fetch("https://ai-j5w7.onrender.com", {  // replace with your Render backend
+        const res = await fetch("https://ai-j5w7.onrender.com/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ character: selectedCharacter, message }),

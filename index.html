@@ -2,62 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI Role-play</title>
+  <title>AI Roleplay</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #eee;
-      display: flex;
-      height: 100vh;
-      margin: 0;
-    }
-    #characters {
-      width: 200px;
-      padding: 10px;
-      border-right: 1px solid #333;
-      background: #222;
-    }
-    #chat {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-    }
-    #input {
-      display: flex;
-      padding: 10px;
-      border-top: 1px solid #333;
-    }
-    input {
-      flex: 1;
-      padding: 8px;
-      border-radius: 4px;
-      border: none;
-      margin-right: 8px;
-    }
-    button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px;
-      background: #4caf50;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #45a049;
-    }
+    body { font-family: Arial; background: #111; color: #eee; display: flex; height: 100vh; margin: 0; }
+    #sidebar { width: 250px; padding: 10px; border-right: 1px solid #333; background: #222; display: flex; flex-direction: column; }
+    #chat { flex: 1; display: flex; flex-direction: column; }
+    #messages { flex: 1; overflow-y: auto; padding: 10px; }
+    #input { display: flex; padding: 10px; border-top: 1px solid #333; }
+    input, textarea { flex: 1; padding: 8px; border-radius: 4px; border: none; margin-right: 8px; }
+    button { padding: 8px 12px; border: none; border-radius: 4px; background: #4caf50; color: #fff; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #characterList button { width: 100%; margin-bottom: 5px; }
+    #addCharacterForm { margin-top: 10px; }
+    textarea { resize: none; }
   </style>
 </head>
 <body>
-  <div id="characters">
+  <div id="sidebar">
     <h3>Characters</h3>
-    <button onclick="selectCharacter('Luna')">Luna (Mystic Witch)</button><br><br>
-    <button onclick="selectCharacter('Kai')">Kai (Cyber Mercenary)</button>
+    <div id="characterList"></div>
+
+    <form id="addCharacterForm">
+      <input type="text" id="newCharName" placeholder="Character Name" required><br><br>
+      <textarea id="newCharPersonality" placeholder="Personality / Description" rows="3" required></textarea><br><br>
+      <button type="submit">Add Character</button>
+    </form>
   </div>
 
   <div id="chat">
@@ -70,31 +39,53 @@
 
   <script>
     const messagesDiv = document.getElementById("messages");
+    const characterListDiv = document.getElementById("characterList");
     let selectedCharacter = null;
 
-    const characters = {
-      Luna: { name: "Luna", personality: "A kind but mysterious witch of the forest." },
-      Kai: { name: "Kai", personality: "A confident, witty cyber mercenary from the future." }
-    };
+    const characters = {};
 
-    function selectCharacter(name) {
-      selectedCharacter = characters[name];
-      messagesDiv.innerHTML = `<b>You are now talking to ${name}.</b><br>`;
+    // Render character buttons
+    function renderCharacterButtons() {
+      characterListDiv.innerHTML = '';
+      for (let key in characters) {
+        const btn = document.createElement('button');
+        btn.textContent = characters[key].name;
+        btn.onclick = () => selectCharacter(key);
+        characterListDiv.appendChild(btn);
+      }
     }
 
+    // Select a character
+    function selectCharacter(key) {
+      selectedCharacter = characters[key];
+      messagesDiv.innerHTML = `<b>You are now talking to ${selectedCharacter.name}.</b><br>`;
+    }
+
+    // Add new character
+    document.getElementById("addCharacterForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("newCharName").value.trim();
+      const personality = document.getElementById("newCharPersonality").value.trim();
+      if (!name || !personality) return;
+      characters[name] = { name, personality };
+      renderCharacterButtons();
+      document.getElementById("newCharName").value = '';
+      document.getElementById("newCharPersonality").value = '';
+    });
+
+    // Send message to backend
     async function sendMessage() {
       const input = document.getElementById("userInput");
       const message = input.value.trim();
       if (!selectedCharacter) return alert("Pick a character first!");
       if (!message) return;
 
-      // Show user's message
       messagesDiv.innerHTML += `<div><b>You:</b> ${message}</div>`;
-      input.value = "";
+      input.value = '';
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
       try {
-        const res = await fetch("https://ai-j5w7.onrender.com/chat", { // <-- your Render backend
+        const res = await fetch("https://ai-j5w7.onrender.com/chat", { // <-- replace with your Render URL
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ character: selectedCharacter, message }),
@@ -104,7 +95,6 @@
 
         const data = await res.json();
         const reply = data.reply || "No response from AI.";
-
         messagesDiv.innerHTML += `<div><b>${selectedCharacter.name}:</b> ${reply}</div>`;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       } catch (err) {

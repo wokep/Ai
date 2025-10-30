@@ -1,22 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>AI Roleplay</title>
   <style>
-    body { font-family: Arial; background: #111; color: #eee; display: flex; height: 100vh; margin: 0; }
-    #characters { width: 200px; padding: 10px; border-right: 1px solid #333; }
-    #chat { flex: 1; display: flex; flex-direction: column; }
-    #messages { flex: 1; overflow-y: auto; padding: 10px; }
-    #input { display: flex; }
-    input { flex: 1; padding: 8px; }
-    button { padding: 8px 12px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      display: flex;
+      height: 100vh;
+      margin: 0;
+    }
+    #characters {
+      width: 200px;
+      padding: 10px;
+      border-right: 1px solid #333;
+      background: #222;
+    }
+    #chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    #input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #333;
+    }
+    input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 4px;
+      border: none;
+      margin-right: 8px;
+    }
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #4caf50;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
   </style>
 </head>
 <body>
   <div id="characters">
     <h3>Characters</h3>
-    <button onclick="selectCharacter('Luna')">Luna (Mystic Witch)</button><br>
+    <button onclick="selectCharacter('Luna')">Luna (Mystic Witch)</button><br><br>
     <button onclick="selectCharacter('Kai')">Kai (Cyber Mercenary)</button>
   </div>
 
@@ -29,8 +69,8 @@
   </div>
 
   <script>
-    let selectedCharacter = null;
     const messagesDiv = document.getElementById("messages");
+    let selectedCharacter = null;
 
     const characters = {
       Luna: { name: "Luna", personality: "A kind but mysterious witch of the forest." },
@@ -44,21 +84,31 @@
 
     async function sendMessage() {
       const input = document.getElementById("userInput");
-      const message = input.value;
+      const message = input.value.trim();
       if (!selectedCharacter) return alert("Pick a character first!");
+      if (!message) return;
+
+      // Show user's message
       messagesDiv.innerHTML += `<div><b>You:</b> ${message}</div>`;
       input.value = "";
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
       try {
-        const res = await fetch("https://ai-j5w7.onrender.com/chat", {
+        const res = await fetch("https://ai-j5w7.onrender.com/chat", { // <-- your Render backend
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ character: selectedCharacter, message }),
         });
+
+        if (!res.ok) throw new Error("Backend returned an error");
+
         const data = await res.json();
-        messagesDiv.innerHTML += `<div><b>${selectedCharacter.name}:</b> ${data.reply}</div>`;
+        const reply = data.reply || "No response from AI.";
+
+        messagesDiv.innerHTML += `<div><b>${selectedCharacter.name}:</b> ${reply}</div>`;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       } catch (err) {
+        console.error(err);
         messagesDiv.innerHTML += `<div><b>Error:</b> Cannot reach backend.</div>`;
       }
     }

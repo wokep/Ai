@@ -1,16 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Roleplay</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; }
+    #chatContainer { width: 600px; margin: 50px auto; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    #messages { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa; }
+    .message { margin-bottom: 10px; }
+    .user { color: blue; }
+    .ai { color: green; }
+    #controls { display: flex; gap: 10px; }
+    #userInput { flex: 1; padding: 10px; font-size: 16px; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #characterList { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<div id="chatContainer">
+  <h2>AI Roleplay</h2>
+
+  <div>
+    <input type="text" id="newCharacterName" placeholder="Character name">
+    <input type="text" id="newCharacterPersonality" placeholder="Character personality">
+    <button onclick="addCharacter()">Add Character</button>
+  </div>
+
+  <div id="characterList"></div>
+
+  <div id="messages"></div>
+
+  <div id="controls">
+    <input type="text" id="userInput" placeholder="Type your message here">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
 <script>
+let selectedCharacter = null;
+let characters = [];
+const messagesDiv = document.getElementById("messages");
+const characterListDiv = document.getElementById("characterList");
+
+function addCharacter() {
+  const nameInput = document.getElementById("newCharacterName");
+  const personalityInput = document.getElementById("newCharacterPersonality");
+  const name = nameInput.value.trim();
+  const personality = personalityInput.value.trim();
+
+  if (!name || !personality) return alert("Enter both name and personality.");
+
+  const character = { name, personality };
+  characters.push(character);
+  selectedCharacter = character;
+
+  renderCharacterList();
+
+  nameInput.value = "";
+  personalityInput.value = "";
+}
+
+function renderCharacterList() {
+  characterListDiv.innerHTML = "";
+  characters.forEach((c, idx) => {
+    const btn = document.createElement("button");
+    btn.textContent = c.name;
+    btn.style.fontWeight = c === selectedCharacter ? "bold" : "normal";
+    btn.onclick = () => {
+      selectedCharacter = c;
+      renderCharacterList();
+    };
+    characterListDiv.appendChild(btn);
+  });
+}
+
 async function sendMessage() {
   const input = document.getElementById("userInput");
   const message = input.value.trim();
   if (!selectedCharacter) return alert("Pick a character first!");
   if (!message) return;
 
-  messagesDiv.innerHTML += `<div><b>You:</b> ${message}</div>`;
-  input.value = '';
+  messagesDiv.innerHTML += `<div class="message user"><b>You:</b> ${message}</div>`;
+  input.value = "";
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
   try {
-    const res = await fetch("https://ai-j5w7.onrender.com/chat", { // Render backend proxy
+    const res = await fetch("https://ai-j5w7.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ character: selectedCharacter, message }),
@@ -23,12 +99,15 @@ async function sendMessage() {
 
     const data = await res.json();
     const reply = data.reply || "AI did not respond.";
-    messagesDiv.innerHTML += `<div><b>${selectedCharacter.name}:</b> ${reply}</div>`;
+    messagesDiv.innerHTML += `<div class="message ai"><b>${selectedCharacter.name}:</b> ${reply}</div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
   } catch (err) {
     console.error(err);
-    messagesDiv.innerHTML += `<div><b>Error:</b> ${err.message}</div>`;
+    messagesDiv.innerHTML += `<div class="message ai"><b>Error:</b> ${err.message}</div>`;
   }
 }
 </script>
+
+</body>
+</html>

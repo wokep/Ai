@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import fetch from "node-fetch"; // Install with npm install node-fetch@2
+import fetch from "node-fetch";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,42 +13,42 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Health check
-app.get("/", (req, res) => res.send("AI Roleplay backend (ApiFreeLLM) running!"));
+app.get("/", (req, res) => res.send("AI Roleplay backend (HuggingFace) running!"));
 
 // Chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const { character, message } = req.body;
-
-    if (!character || !message) {
+    if (!character || !message)
       return res.status(400).json({ error: "Missing character or message" });
-    }
 
-    console.log(`User message to ${character.name}:`, message);
+    const prompt = `You are roleplaying as ${character.name}. Personality: ${character.personality}. User says: ${message}`;
 
-    // Combine character personality + message
-    const prompt = `You are roleplaying as ${character.name}.\nPersonality: ${character.personality}\nUser says: ${message}`;
+    const HF_API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct";
+    const HF_API_TOKEN = process.env.HF_API_TOKEN; // your token in Render env vars
 
-    // Call ApiFreeLLM
-    const response = await fetch("https://apifreellm.com/api/chat", {
+    const response = await fetch(HF_API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: prompt })
+      headers: {
+        "Authorization": `Bearer ${HF_API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: prompt })
     });
 
     const data = await response.json();
 
-    if (data.status !== "success") {
-      console.error("ApiFreeLLM error:", data.error);
+    if (!data || data.error) {
+      console.error("HuggingFace API error:", data.error);
       return res.status(500).json({ error: "AI service error: " + data.error });
     }
 
-    const reply = data.response;
-    console.log(`${character.name} replied:`, reply);
+    // data is usually an array with generated text
+    const reply = data[0]?.generated_text || "AI did not respond.";
     res.json({ reply });
 
   } catch (err) {
-    console.error("Server error:", err);
+    console.error("Server error:", err.message || err);
     res.status(500).json({ error: "Server error. Check backend logs." });
   }
 });

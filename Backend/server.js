@@ -9,15 +9,25 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+// Middleware
+app.use(cors()); // allow all origins
 app.use(bodyParser.json());
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
+// Chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const { character, message } = req.body;
-    if (!character || !message) return res.status(400).json({ error: "Missing character or message" });
+
+    if (!character || !message) {
+      return res.status(400).json({ error: "Missing character or message" });
+    }
+
+    console.log(`User message to ${character.name}:`, message);
 
     const systemPrompt = `
       You are roleplaying as ${character.name}.
@@ -34,11 +44,16 @@ app.post("/chat", async (req, res) => {
     });
 
     const reply = completion.choices[0].message.content;
+    console.log(`${character.name} replied:`, reply);
+
     res.json({ reply });
   } catch (error) {
-    console.error(error);
+    console.error("Error:", error);
     res.status(500).json({ error: "Something went wrong on the server." });
   }
 });
 
-app.listen(port, () => console.log(`✅ Server running on port ${port}`));
+// Start server
+app.listen(port, () => {
+  console.log(`✅ Server running on port ${port}`);
+});

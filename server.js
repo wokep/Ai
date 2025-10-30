@@ -25,7 +25,7 @@ app.post("/chat", async (req, res) => {
     const prompt = `You are roleplaying as ${character.name}. Personality: ${character.personality}. User says: ${message}`;
 
     const HF_API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct";
-    const HF_API_TOKEN = process.env.HF_API_TOKEN; // your token in Render env vars
+    const HF_API_TOKEN = process.env.HF_API_TOKEN; // Add this in Render environment variables
 
     const response = await fetch(HF_API_URL, {
       method: "POST",
@@ -43,7 +43,6 @@ app.post("/chat", async (req, res) => {
       return res.status(500).json({ error: "AI service error: " + data.error });
     }
 
-    // data is usually an array with generated text
     const reply = data[0]?.generated_text || "AI did not respond.";
     res.json({ reply });
 

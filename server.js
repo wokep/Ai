@@ -4,17 +4,20 @@ import bodyParser from "body-parser";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
+// Load local .env (for local dev)
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Allow all origins (GitHub Pages + any browser)
+// Enable CORS for all origins
 app.use(cors());
 app.use(bodyParser.json());
 
 // OpenAI client
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // must be set in Render environment variables
+});
 
 // Health check
 app.get("/", (req, res) => {
@@ -27,6 +30,7 @@ app.post("/chat", async (req, res) => {
     const { character, message } = req.body;
 
     if (!character || !message) {
+      console.error("Missing character or message:", req.body);
       return res.status(400).json({ error: "Missing character or message" });
     }
 
@@ -38,6 +42,7 @@ app.post("/chat", async (req, res) => {
       Stay in character and reply naturally in roleplay format.
     `;
 
+    // Send request to OpenAI
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -46,13 +51,17 @@ app.post("/chat", async (req, res) => {
       ],
     });
 
-    const reply = completion.choices[0].message.content;
-    console.log(`${character.name} replied:`, reply);
+    const reply = completion.choices?.[0]?.message?.content;
+    if (!reply) {
+      console.error("No reply returned from OpenAI:", completion);
+      return res.status(500).json({ error: "No reply from AI" });
+    }
 
+    console.log(`${character.name} replied:`, reply);
     res.json({ reply });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Something went wrong on the server." });
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ error: "Server error. Check backend logs." });
   }
 });
 

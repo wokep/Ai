@@ -3,30 +3,59 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import OpenAI from "openai";
 import dotenv from "dotenv";
+
+// Load environment variables
 dotenv.config();
 
+// Initialize app
 const app = express();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const port = 3000;
 
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-app.post("/chat", async (req, res) => {
-  const { character, message } = req.body;
-
-  const systemPrompt = `You are roleplaying as ${character.name}. 
-  Personality: ${character.personality}.
-  Speak in character at all times.`;
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: message }
-    ],
-  });
-
-  res.json({ reply: response.choices[0].message.content });
+// Create OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+// Chat endpoint
+app.post("/chat", async (req, res) => {
+  try {
+    const { character, message } = req.body;
+
+    if (!character || !message) {
+      return res.status(400).json({ error: "Missing character or message" });
+    }
+
+    console.log(`User message to ${character.name}:`, message);
+
+    const systemPrompt = `
+      You are roleplaying as ${character.name}.
+      Personality: ${character.personality}.
+      Stay in character and reply naturally in roleplay format.
+    `;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message },
+      ],
+    });
+
+    const reply = completion.choices[0].message.content;
+    console.log(`${character.name} replied:`, reply);
+
+    res.json({ reply });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Something went wrong on the server." });
+  }
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`✅ Server running on http://localhost:${port}`);
+});

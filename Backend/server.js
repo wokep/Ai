@@ -14,12 +14,13 @@ app.use(cors()); // allow all origins
 app.use(bodyParser.json());
 
 // OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Test endpoint for health check
+app.get("/", (req, res) => res.send("AI Roleplay backend is running!"));
 
 // Chat endpoint
-app.post("/chat", async (req, res) => { ... });
+app.post("/chat", async (req, res) => {
   try {
     const { character, message } = req.body;
 
@@ -54,6 +55,4 @@ app.post("/chat", async (req, res) => { ... });
 });
 
 // Start server
-app.listen(port, () => {
-  console.log(`✅ Server running on port ${port}`);
-});
+app.listen(port, () => console.log(`✅ Server running on port ${port}`));

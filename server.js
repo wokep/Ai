@@ -12,10 +12,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Health check
-app.get("/", (req, res) => res.send("AI Roleplay backend (HuggingFace) running!"));
+app.get("/", (req, res) => res.send("AI Roleplay backend (HuggingFace GPT-2) running!"));
 
-// Chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const { character, message } = req.body;
@@ -24,8 +22,8 @@ app.post("/chat", async (req, res) => {
 
     const prompt = `You are roleplaying as ${character.name}. Personality: ${character.personality}. User says: ${message}`;
 
-    const HF_API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct";
-    const HF_API_TOKEN = process.env.HF_API_TOKEN; // Add this in Render environment variables
+    const HF_API_URL = "https://api-inference.huggingface.co/models/gpt2";
+    const HF_API_TOKEN = process.env.HF_API_TOKEN;
 
     const response = await fetch(HF_API_URL, {
       method: "POST",

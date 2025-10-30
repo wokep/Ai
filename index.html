@@ -85,7 +85,7 @@
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
       try {
-        const res = await fetch("https://ai-j5w7.onrender.com/chat", { // <-- Replace with your Render URL
+        const res = await fetch("https://ai-j5w7.onrender.com/", { // <-- Replace with your Render URL
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ character: selectedCharacter, message }),

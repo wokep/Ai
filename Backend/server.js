@@ -19,7 +19,7 @@ const openai = new OpenAI({
 });
 
 // Chat endpoint
-app.post("/chat", async (req, res) => {
+app.post("/chat", async (req, res) => { ... });
   try {
     const { character, message } = req.body;
 

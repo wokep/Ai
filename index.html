@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI Roleplay</title>
+  <title>AI</title>
   <style>
     body { font-family: Arial; background: #111; color: #eee; display: flex; height: 100vh; margin: 0; }
     #sidebar { width: 250px; padding: 10px; border-right: 1px solid #333; background: #222; display: flex; flex-direction: column; }
@@ -85,12 +85,11 @@
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
       try {
-        const res = await fetch("https://ai-j5w7.onrender.com/chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ character: selectedCharacter, message }),
-});
-
+        const res = await fetch("https://ai-j5w7.onrender.com/chat", { // <-- Replace with your Render URL
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ character: selectedCharacter, message }),
+        });
 
         if (!res.ok) throw new Error("Backend returned an error");
 

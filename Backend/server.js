@@ -4,21 +4,22 @@ import bodyParser from "body-parser";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
-
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors()); // allow all origins
+// Allow all origins (GitHub Pages + any browser)
+app.use(cors());
 app.use(bodyParser.json());
 
 // OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Test endpoint for health check
-app.get("/", (req, res) => res.send("AI Roleplay backend is running!"));
+// Health check
+app.get("/", (req, res) => {
+  res.send("AI Roleplay backend is running!");
+});
 
 // Chat endpoint
 app.post("/chat", async (req, res) => {

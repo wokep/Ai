@@ -1,7 +1,7 @@
 {
   "name": "ai-roleplay-backend",
   "version": "1.0.0",
-  "description": "AI Roleplay backend using ApiFreeLLM",
+  "description": "AI Roleplay backend using HuggingFace Inference API",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "dotenv": "^16.3.1",
     "node-fetch": "^2.6.12"
   },
-  "keywords": ["ai", "roleplay", "chatbot", "apifreellm"],
+  "keywords": ["ai", "roleplay", "chatbot", "huggingface"],
   "author": "Your Name",
   "license": "MIT"
 }

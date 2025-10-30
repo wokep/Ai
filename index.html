@@ -84,13 +84,16 @@ async function sendMessage() {
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
   try {
-    const res = await fetch("https://ai-j5w7.onrender.com/chat", { // <-- Replace with your Render URL
+    const res = await fetch("https://ai-j5w7.onrender.com/chat", { // Render backend URL
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ character: selectedCharacter, message }),
     });
 
-    if (!res.ok) throw new Error("Backend returned an error");
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || "Backend returned an error");
+    }
 
     const data = await res.json();
     const reply = data.reply || "No response from AI.";
@@ -98,7 +101,7 @@ async function sendMessage() {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   } catch (err) {
     console.error(err);
-    messagesDiv.innerHTML += `<div><b>Error:</b> Cannot reach backend.</div>`;
+    messagesDiv.innerHTML += `<div><b>Error:</b> ${err.message}</div>`;
   }
 }
 </script>
